@@ -7,8 +7,10 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 contract Airdrop is Ownable {
-    IERC20 token;
-    bytes32 private root;
+    IERC20 public token;
+    bytes32 public root;
+    bool public isAirdropActive = false;
+
     event Claimed(address addr, uint256 amount);
 
     mapping(address => bool) public claimed;
@@ -26,7 +28,12 @@ contract Airdrop is Ownable {
         token = _token;
     }
 
+    function updateAirdropStatus(bool _isAirdropActive) public onlyOwner {
+        isAirdropActive = _isAirdropActive;
+    }
+
     function claim(bytes32[] memory proof, uint256 amount) public {
+        require(isAirdropActive, "Airdrop is not active");
         require(!claimed[msg.sender], "Already claimed");
         console.log("msg.sender: %s", msg.sender);
         bytes32 leaf = keccak256(
@@ -42,3 +49,4 @@ contract Airdrop is Ownable {
         IERC20(token).transfer(msg.sender, _amount);
     }
 }
+/// signature: address-startclaim -endclaim - tge
